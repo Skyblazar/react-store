@@ -21,6 +21,9 @@
     "url": "https://github.com/Skyblazar/react-store/issues"
   },
   "homepage": "https://github.com/Skyblazar/react-store#readme",
+  "engines": {
+    "node": ">=17.0.0"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.3",
