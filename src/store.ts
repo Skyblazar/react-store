@@ -1,7 +1,8 @@
+import { FALLBACK_CONNECTION, reduxDevtools } from './reduxDevtools';
 import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions } from './store.types';
 
 export class Store<StoreState, Actions extends StoreActions<StoreState>> {
-  private readonly reduxDevtoolsConnection: any;
+  private readonly reduxDevtoolsConnection: ReduxDevtoolsConnection;
 
   private readonly storeListeners = new Map<
     string,
@@ -14,6 +15,13 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> {
     private storeActions: Actions,
     private storeOptions = DEFAULT_STORE_OPTIONS
   ) {
+    this.reduxDevtoolsConnection =
+      this.storeOptions.debugStore && !!window?.__REDUX_DEVTOOLS_EXTENSION__
+        ? reduxDevtools.connectStore({
+            storeName: storeName,
+            initialStoreState: this.storeState,
+          })
+        : FALLBACK_CONNECTION;
     this.reduxDevtoolsConnection.init(this.storeState);
   }
 
