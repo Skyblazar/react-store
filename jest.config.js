@@ -1,11 +1,9 @@
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
-  testMatch: ['**/test/**/*.test.ts'],
-  collectCoverageFrom: [
-    '<rootDir>/src/**/*.ts',
-    '!<rootDir>/src/types/**/*.ts',
-  ],
+  testEnvironment: 'jest-environment-jsdom',
+  testMatch: ['**/test/**/*.test.{ts,tsx}'],
+  setupFiles: ['<rootDir>/src/testSetup.ts'],
+  collectCoverageFrom: ['<rootDir>/src/**/*.{ts,tsx}', '!<rootDir>/src/types/**/*.{ts,tsx}'],
   globals: {
     'ts-jest': {
       diagnostics: false,

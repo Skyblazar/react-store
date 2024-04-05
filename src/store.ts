@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { FALLBACK_CONNECTION, reduxDevtools } from './reduxDevtools';
 import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions } from './store.types';
 
@@ -54,7 +55,7 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> {
   subscribeToStoreChange(
     onStoreChangedCallback: (newState: Immutable<StoreState>, prevState: Immutable<StoreState>) => void
   ) {
-    const id = crypto.randomUUID();
+    const id = randomUUID();
     this.storeListeners.set(id, onStoreChangedCallback);
 
     return () => {
