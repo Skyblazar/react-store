@@ -66,8 +66,8 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
 
     return action(payload, {
       state: this.state,
-      updateState: newStoreState => this.updateState(newStoreState, actionKey, payload),
-      updateProperty: (key, value) => this.updateProperty(key, value, actionKey, payload),
+      updateState: newStoreState => this.updateStoreState(newStoreState, actionKey, payload),
+      updateProperty: (key, value) => this.updateStoreProperty(key, value, actionKey, payload),
     });
   }
 
@@ -84,13 +84,23 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
     };
   }
 
-  private updateState(state: Immutable<StoreState>, actionKey: keyof Actions, payload: unknown) {
+  /** Directly update the store state */
+  updateState(state: Immutable<StoreState>): void {
+    this.updateStoreState(state, 'DIRECT_STORE_UPDATE', state);
+  }
+
+  /** Directly update a property in the store state */
+  updateProperty<T extends keyof StoreState>(key: T, value: StoreState[T]) {
+    this.updateStoreProperty(key, value, 'DIRECT_STORE_PROPERTY_UPDATE', { [key]: value });
+  }
+
+  private updateStoreState(state: Immutable<StoreState>, actionKey: keyof Actions, payload: unknown): void {
     const prevState = structuredClone(this.state);
     this.storeState = state as StoreState;
     this.onStoreChanged(state, prevState, actionKey, payload);
   }
 
-  private updateProperty<T extends keyof StoreState>(
+  private updateStoreProperty<T extends keyof StoreState>(
     key: T,
     value: StoreState[T],
     actionKey: keyof Actions,
@@ -110,7 +120,7 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
     this.storeListeners.forEach(callback => {
       callback(newState, prevState);
     });
-    this.reduxDevtoolsConnection.send({ type: String(actionKey), payload: payload }, newState);
+    this.reduxDevtoolsConnection.send({ type: String(actionKey), payload }, newState);
   }
 
   /** Reset store back to initial state */
