@@ -78,7 +78,9 @@ const TestComponent: React.FunctionComponent = () => {
 describe('useStore', () => {
   const renderTestComponent = () => render(<TestComponent />);
 
-  beforeEach(() => {});
+  beforeEach(() => {
+    actionsStore.reset();
+  });
 
   describe('actions update:', () => {
     it('should relect state update for first button', async () => {
@@ -127,6 +129,23 @@ describe('useStore', () => {
 
       await userEvent.click(thirdCountBtn);
       await waitFor(() => expect(thirdCountBtn).toHaveTextContent('302'));
+    });
+
+    it('should relect state update for all button', async () => {
+      renderTestComponent();
+
+      const allBtn = screen.getByTestId('allBtn');
+      const firstCountBtn = screen.getByTestId('firstCountBtn');
+      const secondCountBtn = screen.getByTestId('secondCountBtn');
+      const thirdCountBtn = screen.getByTestId('thirdCountBtn');
+      expect(firstCountBtn).toHaveTextContent('0');
+      expect(secondCountBtn).toHaveTextContent('1');
+      expect(thirdCountBtn).toHaveTextContent('2');
+
+      await userEvent.click(allBtn);
+      await waitFor(() => expect(firstCountBtn).toHaveTextContent('1'));
+      await waitFor(() => expect(secondCountBtn).toHaveTextContent('2'));
+      await waitFor(() => expect(thirdCountBtn).toHaveTextContent('3'));
     });
   });
 });
