@@ -2,7 +2,20 @@ import { randomUUID } from 'crypto';
 import { FALLBACK_CONNECTION, reduxDevtools } from './reduxDevtools';
 import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions } from './store.types';
 
-export class Store<StoreState, Actions extends StoreActions<StoreState>> {
+export class BaseStore {
+  public static readonly stores: Store<any, any>[] = [];
+
+  constructor() {
+    const newStore = this as unknown as Store<any, any>;
+    BaseStore.stores.push(newStore);
+  }
+
+  static getStore(storeName: string) {
+    return this.stores.find(store => store.name === storeName);
+  }
+}
+
+export class Store<StoreState, Actions extends StoreActions<StoreState>> extends BaseStore {
   private readonly reduxDevtoolsConnection: ReduxDevtoolsConnection;
 
   private readonly initialState: StoreState;
@@ -18,6 +31,8 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> {
     private storeActions: Actions,
     private storeOptions = DEFAULT_STORE_OPTIONS
   ) {
+    super();
+
     this.initialState = storeState;
 
     this.reduxDevtoolsConnection =
