@@ -31,6 +31,14 @@ const actionsStore = new Store(
         thirdCount: payload,
       });
     },
+    incrementAll: (payload: null, { updateState, state }) => {
+      updateState({
+        ...state,
+        firstCount: state.firstCount + 1,
+        secondCount: state.secondCount + 1,
+        thirdCount: state.thirdCount + 1,
+      });
+    },
   }
 );
 
@@ -59,6 +67,10 @@ const TestComponent: React.FunctionComponent = () => {
       >
         {thirdCount}
       </button>
+
+      <button data-testid="allBtn" onClick={() => actionsStore.dispatch('incrementAll', () => null)}>
+        All
+      </button>
     </div>
   );
 };
@@ -66,8 +78,10 @@ const TestComponent: React.FunctionComponent = () => {
 describe('useStore', () => {
   const renderTestComponent = () => render(<TestComponent />);
 
+  beforeEach(() => {});
+
   describe('actions update:', () => {
-    it('should relect state update', async () => {
+    it('should relect state update for first button', async () => {
       renderTestComponent();
 
       const firstCountBtn = screen.getByTestId('firstCountBtn');
@@ -81,6 +95,38 @@ describe('useStore', () => {
 
       await userEvent.click(firstCountBtn);
       await waitFor(() => expect(firstCountBtn).toHaveTextContent('3'));
+    });
+
+    it('should relect state update for second button', async () => {
+      renderTestComponent();
+
+      const secondCountBtn = screen.getByTestId('secondCountBtn');
+      expect(secondCountBtn).toHaveTextContent('1');
+
+      await userEvent.click(secondCountBtn);
+      await waitFor(() => expect(secondCountBtn).toHaveTextContent('2'));
+
+      await userEvent.click(secondCountBtn);
+      await waitFor(() => expect(secondCountBtn).toHaveTextContent('3'));
+
+      await userEvent.click(secondCountBtn);
+      await waitFor(() => expect(secondCountBtn).toHaveTextContent('4'));
+    });
+
+    it('should relect state update for third button', async () => {
+      renderTestComponent();
+
+      const thirdCountBtn = screen.getByTestId('thirdCountBtn');
+      expect(thirdCountBtn).toHaveTextContent('2');
+
+      await userEvent.click(thirdCountBtn);
+      await waitFor(() => expect(thirdCountBtn).toHaveTextContent('102'));
+
+      await userEvent.click(thirdCountBtn);
+      await waitFor(() => expect(thirdCountBtn).toHaveTextContent('202'));
+
+      await userEvent.click(thirdCountBtn);
+      await waitFor(() => expect(thirdCountBtn).toHaveTextContent('302'));
     });
   });
 });
