@@ -5,6 +5,8 @@ import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions } from './store.types';
 export class Store<StoreState, Actions extends StoreActions<StoreState>> {
   private readonly reduxDevtoolsConnection: ReduxDevtoolsConnection;
 
+  private readonly initialState: StoreState;
+
   private readonly storeListeners = new Map<
     string,
     (newState: Immutable<StoreState>, prevState: Immutable<StoreState>) => void
@@ -16,6 +18,8 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> {
     private storeActions: Actions,
     private storeOptions = DEFAULT_STORE_OPTIONS
   ) {
+    this.initialState = storeState;
+
     this.reduxDevtoolsConnection =
       this.storeOptions.debugStore && !!window?.__REDUX_DEVTOOLS_EXTENSION__
         ? reduxDevtools.connectStore({
@@ -92,5 +96,10 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> {
       callback(newState, prevState);
     });
     this.reduxDevtoolsConnection.send({ type: String(actionKey), payload: payload }, newState);
+  }
+
+  /** Reset store back to initial state */
+  reset() {
+    this.storeState = this.initialState;
   }
 }
