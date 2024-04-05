@@ -2,12 +2,14 @@ import { randomUUID } from 'crypto';
 import { FALLBACK_CONNECTION, reduxDevtools } from './reduxDevtools';
 import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions } from './store.types';
 
-export class BaseStore {
-  public static readonly stores: Store<any, any>[] = [];
+/** Contains a copy of all the created stores */
+export class CentralStore {
+  /** A list of all the created stores */
+  private static readonly stores: Store<any, any>[] = [];
 
   constructor() {
     const newStore = this as unknown as Store<any, any>;
-    BaseStore.stores.push(newStore);
+    CentralStore.stores.push(newStore);
   }
 
   static getStore(storeName: string) {
@@ -15,7 +17,7 @@ export class BaseStore {
   }
 }
 
-export class Store<StoreState, Actions extends StoreActions<StoreState>> extends BaseStore {
+export class Store<StoreState, Actions extends StoreActions<StoreState>> extends CentralStore {
   private readonly reduxDevtoolsConnection: ReduxDevtoolsConnection;
 
   private readonly initialState: StoreState;
