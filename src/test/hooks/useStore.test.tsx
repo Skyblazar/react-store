@@ -5,8 +5,8 @@ import userEvent from '@testing-library/user-event';
 import { Store } from '../../store';
 import { useStore } from '../../hooks/useStore';
 
-const actionsStore = new Store(
-  'actionsStore',
+const testStore = new Store(
+  'testStore',
   {
     firstCount: 0,
     secondCount: 1,
@@ -43,34 +43,44 @@ const actionsStore = new Store(
 );
 
 const TestComponent: React.FunctionComponent = () => {
-  const { firstCount, secondCount, thirdCount } = useStore(actionsStore);
+  const [{ firstCount, secondCount, thirdCount }, setStoreState] = useStore(testStore);
 
   return (
     <div>
       <button
         data-testid="firstCountBtn"
-        onClick={() => actionsStore.dispatch('incrementFirstCount', state => state.firstCount)}
+        onClick={() => testStore.dispatch('incrementFirstCount', state => state.firstCount)}
       >
         {firstCount}
       </button>
 
       <button
         data-testid="secondCountBtn"
-        onClick={() => actionsStore.dispatch('incrementSecondCount', state => state.secondCount)}
+        onClick={() => testStore.dispatch('incrementSecondCount', state => state.secondCount)}
       >
         {secondCount}
       </button>
 
       <button
         data-testid="thirdCountBtn"
-        onClick={() => actionsStore.dispatch('updateThirdCount', state => state.thirdCount + 100)}
+        onClick={() => testStore.dispatch('updateThirdCount', state => state.thirdCount + 100)}
       >
         {thirdCount}
       </button>
 
-      <button data-testid="allBtn" onClick={() => actionsStore.dispatch('incrementAll', () => null)}>
+      <button data-testid="allBtn" onClick={() => testStore.dispatch('incrementAll', () => null)}>
         All
       </button>
+
+      <button
+        data-testid="directUpdateBtn"
+        onClick={() => setStoreState({ firstCount: 10, secondCount: 100, thirdCount: 10 })}
+        onDoubleClick={() => setStoreState(state => ({ ...state, firstCount: -1000 }))}
+      >
+        Direct update
+      </button>
+
+      {/* TODO: <button data-testid="directPropertyUpdateFirstCountBtn" onClick={jest.fn()}></button> */}
     </div>
   );
 };
@@ -79,7 +89,7 @@ describe('useStore', () => {
   const renderTestComponent = () => render(<TestComponent />);
 
   beforeEach(() => {
-    actionsStore.reset();
+    testStore.reset();
   });
 
   describe('actions update:', () => {
@@ -146,6 +156,30 @@ describe('useStore', () => {
       await waitFor(() => expect(firstCountBtn).toHaveTextContent('1'));
       await waitFor(() => expect(secondCountBtn).toHaveTextContent('2'));
       await waitFor(() => expect(thirdCountBtn).toHaveTextContent('3'));
+    });
+  });
+
+  describe('direct update:', () => {
+    it('should relect state update for direct update button', async () => {
+      renderTestComponent();
+
+      const directUpdateBtn = screen.getByTestId('directUpdateBtn');
+      const firstCountBtn = screen.getByTestId('firstCountBtn');
+      const secondCountBtn = screen.getByTestId('secondCountBtn');
+      const thirdCountBtn = screen.getByTestId('thirdCountBtn');
+      expect(firstCountBtn).toHaveTextContent('0');
+      expect(secondCountBtn).toHaveTextContent('1');
+      expect(thirdCountBtn).toHaveTextContent('2');
+
+      await userEvent.click(directUpdateBtn);
+      await waitFor(() => expect(firstCountBtn).toHaveTextContent('10'));
+      await waitFor(() => expect(secondCountBtn).toHaveTextContent('100'));
+      await waitFor(() => expect(thirdCountBtn).toHaveTextContent('10'));
+
+      await userEvent.dblClick(directUpdateBtn);
+      await waitFor(() => expect(firstCountBtn).toHaveTextContent('-1000'));
+      await waitFor(() => expect(secondCountBtn).toHaveTextContent('100'));
+      await waitFor(() => expect(thirdCountBtn).toHaveTextContent('10'));
     });
   });
 });

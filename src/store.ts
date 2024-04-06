@@ -45,6 +45,8 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
           })
         : FALLBACK_CONNECTION;
     this.reduxDevtoolsConnection.init(this.storeState);
+
+    this.updateState.bind(this);
   }
 
   get name() {
@@ -86,14 +88,35 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
     };
   }
 
-  /** Directly update the store state */
-  updateState(state: Immutable<StoreState>): void {
-    this.updateStoreState(state, 'DIRECT_STORE_UPDATE', state);
+  isInputFunction(input: unknown): input is (state: Immutable<StoreState>) => Immutable<StoreState> {
+    return typeof input === 'function';
   }
 
+  isPropertyInputFunction<T extends keyof StoreState>(
+    input: unknown
+  ): input is (state: Immutable<StoreState>) => StoreState[T] {
+    return typeof input === 'function';
+  }
+
+  /** Directly update the store state using the current store state */
+  updateState(callback: (state: Immutable<StoreState>) => Immutable<StoreState>): void;
+  /** Directly update the store state */
+  updateState(state: Immutable<StoreState>): void;
+  updateState(input: Immutable<StoreState> | ((state: Immutable<StoreState>) => Immutable<StoreState>)): void {
+    const newState = this.isInputFunction(input) ? input(this.state) : input;
+    this.updateStoreState(newState, 'DIRECT_STORE_UPDATE', newState);
+  }
+
+  /** Directly update a property in the store state using the current store state */
+  updateProperty<T extends keyof StoreState>(key: T, callback: (state: Immutable<StoreState>) => StoreState[T]): void;
   /** Directly update a property in the store state */
-  updateProperty<T extends keyof StoreState>(key: T, value: StoreState[T]) {
-    this.updateStoreProperty(key, value, 'DIRECT_STORE_PROPERTY_UPDATE', { [key]: value });
+  updateProperty<T extends keyof StoreState>(key: T, value: StoreState[T]): void;
+  updateProperty<T extends keyof StoreState>(
+    key: T,
+    input: StoreState[T] | ((state: Immutable<StoreState>) => StoreState[T])
+  ): void {
+    const newValue = this.isPropertyInputFunction(input) ? input(this.state) : input;
+    this.updateStoreProperty(key, newValue, 'DIRECT_STORE_PROPERTY_UPDATE', { [key]: newValue });
   }
 
   private updateStoreState(state: Immutable<StoreState>, actionKey: keyof Actions, payload: unknown): void {

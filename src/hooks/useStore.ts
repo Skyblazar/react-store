@@ -7,7 +7,7 @@ import { Store } from '../store';
  */
 export const useStore = <StoreState, Actions extends StoreActions<StoreState>>(
   store: Store<StoreState, Actions>
-): Immutable<StoreState> => {
+): [Immutable<StoreState>, Store<StoreState, Actions>['updateState']] => {
   const [storeState, setStoreState] = useState(store.state);
 
   useEffect(() => {
@@ -18,5 +18,5 @@ export const useStore = <StoreState, Actions extends StoreActions<StoreState>>(
     };
   }, []);
 
-  return storeState;
+  return [storeState, store.updateState.bind(store)];
 };
