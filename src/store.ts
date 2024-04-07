@@ -114,6 +114,10 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
   updateProperty<T extends keyof StoreState>(
     key: T,
     input: StoreState[T] | ((state: Immutable<StoreState>) => StoreState[T])
+  ): void;
+  updateProperty<T extends keyof StoreState>(
+    key: T,
+    input: StoreState[T] | ((state: Immutable<StoreState>) => StoreState[T])
   ): void {
     const newValue = this.isPropertyInputFunction(input) ? input(this.state) : input;
     this.updateStoreProperty(key, newValue, 'DIRECT_STORE_PROPERTY_UPDATE', { [key]: newValue });
