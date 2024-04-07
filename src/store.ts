@@ -28,10 +28,10 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
   >();
 
   constructor(
-    private storeName: string,
+    private readonly storeName: string,
     private storeState: StoreState,
-    private storeActions: Actions,
-    private storeOptions = DEFAULT_STORE_OPTIONS
+    private readonly storeActions: Actions,
+    private readonly storeOptions = DEFAULT_STORE_OPTIONS
   ) {
     super();
 
