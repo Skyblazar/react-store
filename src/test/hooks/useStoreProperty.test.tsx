@@ -43,8 +43,8 @@ const testStore = new Store(
 );
 
 const TestComponent: React.FunctionComponent = () => {
-  const firstCount = useStoreProperty(testStore, state => state.firstCount);
-  const secondCount = useStoreProperty(testStore, state => state.secondCount);
+  const [firstCount, setFirstCount] = useStoreProperty(testStore, state => state.firstCount, 'firstCount');
+  const [secondCount, setSecondCount] = useStoreProperty(testStore, state => state.secondCount, 'secondCount');
 
   return (
     <div>
@@ -71,6 +71,15 @@ const TestComponent: React.FunctionComponent = () => {
 
       <button data-testid="allBtn" onClick={() => testStore.dispatch('incrementAll', () => null)}>
         All
+      </button>
+
+      <button
+        data-testid="directUpdateBtn"
+        onClick={() => setFirstCount(-1000)}
+        onDoubleClick={() => setSecondCount(state => state.secondCount + 1000)}
+        onKeyDown={e => e.key === 'Enter' && testStore.updateProperty('thirdCount', 1000)}
+      >
+        Direct update
       </button>
     </div>
   );
@@ -147,6 +156,38 @@ describe('useStoreProperty', () => {
       await waitFor(() => expect(firstCountBtn).toHaveTextContent('1'));
       await waitFor(() => expect(secondCountBtn).toHaveTextContent('2'));
       await waitFor(() => expect(thirdCountBtn).toHaveTextContent('3'));
+    });
+  });
+
+  describe('direct update:', () => {
+    it('should relect state update for direct update button', async () => {
+      renderTestComponent();
+
+      const directUpdateBtn = screen.getByTestId('directUpdateBtn');
+      const firstCountBtn = screen.getByTestId('firstCountBtn');
+      const secondCountBtn = screen.getByTestId('secondCountBtn');
+      const thirdCountBtn = screen.getByTestId('thirdCountBtn');
+      expect(firstCountBtn).toHaveTextContent('0');
+      expect(secondCountBtn).toHaveTextContent('1');
+      expect(thirdCountBtn).toHaveTextContent('2');
+
+      await userEvent.click(directUpdateBtn);
+      await waitFor(() => expect(firstCountBtn).toHaveTextContent('-1000'));
+      expect(secondCountBtn).toHaveTextContent('1');
+      expect(thirdCountBtn).toHaveTextContent('2');
+
+      await userEvent.dblClick(directUpdateBtn);
+      await waitFor(() => expect(secondCountBtn).toHaveTextContent('1001'));
+      expect(firstCountBtn).toHaveTextContent('-1000');
+      expect(thirdCountBtn).toHaveTextContent('2');
+
+      await userEvent.type(directUpdateBtn, '{enter}');
+      // Store state is updated
+      await waitFor(() => expect(testStore.state.thirdCount).toEqual(1000));
+      // Component state remains the same because no listener is attached for thirdCount
+      expect(thirdCountBtn).toHaveTextContent('2');
+      expect(firstCountBtn).toHaveTextContent('-1000');
+      expect(secondCountBtn).toHaveTextContent('1001');
     });
   });
 });
