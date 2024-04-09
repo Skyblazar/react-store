@@ -12,7 +12,7 @@ export class CentralStore {
     CentralStore.stores.push(newStore);
   }
 
-  static getStore(storeName: string) {
+  static getStore(storeName: string): Store<any, any> | undefined {
     return this.stores.find(store => store.name === storeName);
   }
 }
@@ -49,7 +49,7 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
     this.updateState.bind(this);
   }
 
-  get name() {
+  get name(): string {
     return this.storeName;
   }
 
@@ -57,7 +57,7 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
     return this.storeState as Immutable<StoreState>;
   }
 
-  get actions() {
+  get actions(): Actions {
     return this.storeActions;
   }
 
@@ -77,7 +77,7 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
 
   subscribeToStoreChange(
     onStoreChangedCallback: (newState: Immutable<StoreState>, prevState: Immutable<StoreState>) => void
-  ) {
+  ): () => boolean {
     const id = randomUUID();
     this.storeListeners.set(id, onStoreChangedCallback);
 
