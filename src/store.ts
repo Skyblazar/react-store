@@ -15,6 +15,10 @@ export class CentralStore {
   static getStore(storeName: string): Store<any, any> | undefined {
     return this.stores.find(store => store.name === storeName);
   }
+
+  static getAllStores(): Store<any, any>[] {
+    return this.stores;
+  }
 }
 
 export class Store<StoreState, Actions extends StoreActions<StoreState>> extends CentralStore {
