@@ -9,5 +9,7 @@ describe('BaseStore', () => {
     expect(CentralStore.getStore('store1')).toBe(store1);
     expect(CentralStore.getStore('store2')).toBe(store2);
     expect(CentralStore.getStore('store3')).toBe(store3);
+
+    expect(CentralStore.getAllStores()).toEqual([store1, store2, store3]);
   });
 });
