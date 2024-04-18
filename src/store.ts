@@ -12,10 +12,22 @@ export class CentralStore {
     CentralStore.stores.push(newStore);
   }
 
+  /**
+   * Retrieve a specific Store instance by its name.
+   *
+   * @param storeName represents the name of the store instance to be retrieved.
+   *
+   * @returns a Store instance if a store with the given name exists. If no such store exists, it returns `undefined`.
+   */
   static getStore(storeName: string): Store<any, any> | undefined {
     return this.stores.find(store => store.name === storeName);
   }
 
+  /**
+   * Returns an array of all Store instances.
+   *
+   * Each instance in the array represents a store that has been created.
+   */
   static getAllStores(): Store<any, any>[] {
     return this.stores;
   }
@@ -65,6 +77,15 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
     return this.storeActions;
   }
 
+  /**
+   * Used to dispatch an action to update the store state. The action is identified by a
+   * unique key within the scope of the store
+   *
+   * @param actionKey a key that identifies the action to be dispatched
+   * @param payLoadCallback a function that is given the current state of the store as an argument and returns the payload for the action. The payload must be of the type that the action expects.
+   *
+   * @returns the result of the dispatched action. The type of the result is determined by the ReturnType of the action identified by the actionKey
+   */
   dispatch<T extends keyof Actions>(
     actionKey: T,
     payLoadCallback: (storeState: Immutable<StoreState>) => Parameters<Actions[T]>[0]
@@ -79,6 +100,13 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
     });
   }
 
+  /**
+   * Subscribes a callback function to changes in the store's state. The callback function is called with
+   * the new and previous state of the store whenever the state changes.
+   *
+   * @param onStoreChangedCallback given the new state and the previous state of the store as arguments. It is called whenever the state of the store changes.
+   * @returns
+   */
   subscribeToStoreChange(
     onStoreChangedCallback: (newState: Immutable<StoreState>, prevState: Immutable<StoreState>) => void
   ): () => boolean {
@@ -102,9 +130,18 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
     return typeof input === 'function';
   }
 
-  /** Directly update the store state using the current store state */
+  /**
+   * Directly update the state of the store. The new state is provided by a
+   * function that takes the current state and derives the new state.
+   *
+   * @param callback a function that takes the current state of the store and returns the new state
+   */
   updateState(callback: (state: Immutable<StoreState>) => Immutable<StoreState>): void;
-  /** Directly update the store state */
+  /**
+   * Directly update the state of the store.
+   *
+   * @param state the new state of the store
+   */
   updateState(state: Immutable<StoreState>): void;
   updateState(input: Immutable<StoreState> | ((state: Immutable<StoreState>) => Immutable<StoreState>)): void {
     const newState = this.isInputFunction(input) ? input(this.state) : input;
