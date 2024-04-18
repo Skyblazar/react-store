@@ -18,8 +18,6 @@ export type Immutable<T> = T extends ImmutablePrimitive
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AllowedAny = any;
 
-// Constants
-
 export type StoreCallback<StoreState, T extends keyof StoreState> = (value: Immutable<StoreState[T]>) => StoreState[T];
 
 interface SubStore<StoreState> {
@@ -33,7 +31,12 @@ export type StoreActions<StoreState> = Record<
   (payload: AllowedAny, subStore: SubStore<StoreState>) => AllowedAny
 >;
 
-export interface StoreOptions {
+/**
+ * Options from store.
+ *
+ * Custom properties can be added as store options
+ * */
+export interface StoreOptions extends Record<string, AllowedAny> {
   /** Enable/Disable debugging with redux devtools extension. Defaults to `false` */
   debugStore: boolean;
 }
