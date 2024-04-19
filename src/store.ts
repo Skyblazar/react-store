@@ -65,14 +65,23 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
     this.updateState.bind(this);
   }
 
+  /**
+   * The name of the store
+   */
   get name(): string {
     return this.storeName;
   }
 
+  /**
+   * The current immutable state of the store
+   */
   get state(): Immutable<StoreState> {
     return this.storeState as Immutable<StoreState>;
   }
 
+  /**
+   * The actions that can be dispatched to update the store state
+   */
   get actions(): Actions {
     return this.storeActions;
   }

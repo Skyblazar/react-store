@@ -4,7 +4,34 @@ import { Store } from '../store';
 import { isEqual } from 'lodash';
 
 /**
- * Subscribe to changes in a store property
+ * A React hook that is used to connect a React component to a specific property of a store's state.
+ * It takes a store, a function to select a property from the store's state, and a key of the property as arguments.
+ * It returns the current value of the selected property and a function to update the value of the property.
+ *
+ * @param store an instance of the Store class. The store contains the state that the React component should be connected to and the actions (optional) that can be dispatched to the store
+ * @param selectPropertyFn a function that is given the state of the store as an argument and returns the value of the selected property.
+ * @param propertyKey the key of the property that should be updated.
+ *
+ * @returns an array with two elements:
+ *  - The current value of the selected property from the store's state.
+ *  - A function that can be used to update the value of the selected property in the store's state.
+ *
+ * @example
+ * ```tsx
+ * const myStore = new Store('myStore', { myProperty: 0 });
+ *
+ * export const MyComponent: React.FC = () => {
+ *   const [myProperty, setMyProperty] = useStoreProperty(myStore, state => state.myProperty, 'myProperty');
+ *
+ *   return (
+ *     <div
+ *       onClick={() => setMyProperty(1000)}
+ *       onDoubleClick={() => setMyProperty(state => state.myProperty - 1000)}>
+ *       {myProperty}
+ *     </div>
+ *   );
+ * }
+ * ```
  */
 export const useStoreProperty = <
   StoreState,
