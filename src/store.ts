@@ -120,11 +120,11 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
     };
   }
 
-  isInputFunction(input: unknown): input is (state: Immutable<StoreState>) => Immutable<StoreState> {
+  private isInputFunction(input: unknown): input is (state: Immutable<StoreState>) => Immutable<StoreState> {
     return typeof input === 'function';
   }
 
-  isPropertyInputFunction<T extends keyof StoreState>(
+  private isPropertyInputFunction<T extends keyof StoreState>(
     input: unknown
   ): input is (state: Immutable<StoreState>) => StoreState[T] {
     return typeof input === 'function';
