@@ -33,7 +33,10 @@ export class CentralStore {
   }
 }
 
-export class Store<StoreState, Actions extends StoreActions<StoreState>> extends CentralStore {
+export class Store<
+  StoreState,
+  Actions extends StoreActions<StoreState> = StoreActions<StoreState>,
+> extends CentralStore {
   private readonly reduxDevtoolsConnection: ReduxDevtoolsConnection;
 
   private readonly initialState: StoreState;
