@@ -68,7 +68,7 @@ const TestComponent: React.FunctionComponent = () => {
         {thirdCount}
       </button>
 
-      <button data-testid="allBtn" onClick={() => testStore.dispatch('incrementAll', () => undefined)}>
+      <button data-testid="allBtn" onClick={() => testStore.dispatch('incrementAll')}>
         All
       </button>
 
