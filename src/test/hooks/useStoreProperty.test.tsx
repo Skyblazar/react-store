@@ -13,25 +13,25 @@ const testStore = new Store(
     thirdCount: 2,
   },
   {
-    incrementFirstCount: (payload: number, { updateState, state }) => {
+    incrementFirstCount: ({ updateState, state }, payload: number) => {
       updateState({
         ...state,
         firstCount: ++payload,
       });
     },
-    incrementSecondCount: (payload: number, { updateState, state }) => {
+    incrementSecondCount: ({ updateState, state }, payload: number) => {
       updateState({
         ...state,
         secondCount: ++payload,
       });
     },
-    updateThirdCount: (payload: number, { updateState, state }) => {
+    updateThirdCount: ({ updateState, state }, payload: number) => {
       updateState({
         ...state,
         thirdCount: payload,
       });
     },
-    incrementAll: (payload: null, { updateState, state }) => {
+    incrementAll: ({ updateState, state }) => {
       updateState({
         ...state,
         firstCount: state.firstCount + 1,
@@ -69,7 +69,7 @@ const TestComponent: React.FunctionComponent = () => {
         {testStore.state.thirdCount}
       </button>
 
-      <button data-testid="allBtn" onClick={() => testStore.dispatch('incrementAll', () => null)}>
+      <button data-testid="allBtn" onClick={() => testStore.dispatch('incrementAll', () => undefined)}>
         All
       </button>
 

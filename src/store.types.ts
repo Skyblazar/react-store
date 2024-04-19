@@ -28,7 +28,7 @@ interface SubStore<StoreState> {
 
 export type StoreActions<StoreState> = Record<
   string,
-  (payload: AllowedAny, subStore: SubStore<StoreState>) => AllowedAny
+  (subStore: SubStore<StoreState>, payload: AllowedAny) => AllowedAny
 >;
 
 /**

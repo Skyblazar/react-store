@@ -97,16 +97,19 @@ export class Store<StoreState, Actions extends StoreActions<StoreState>> extends
    */
   dispatch<T extends keyof Actions>(
     actionKey: T,
-    payLoadCallback: (storeState: Immutable<StoreState>) => Parameters<Actions[T]>[0]
+    payLoadCallback: (storeState: Immutable<StoreState>) => Parameters<Actions[T]>[1]
   ): ReturnType<Actions[T]> {
     const payload = payLoadCallback(this.state);
     const action = this.storeActions[actionKey];
 
-    return action(payload, {
-      state: this.state,
-      updateState: newStoreState => this.updateStoreState(newStoreState, actionKey, payload),
-      updateProperty: (key, value) => this.updateStoreProperty(key, value, actionKey, payload),
-    });
+    return action(
+      {
+        state: this.state,
+        updateState: newStoreState => this.updateStoreState(newStoreState, actionKey, payload),
+        updateProperty: (key, value) => this.updateStoreProperty(key, value, actionKey, payload),
+      },
+      payload
+    );
   }
 
   /**
