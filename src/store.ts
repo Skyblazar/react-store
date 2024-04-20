@@ -146,27 +146,27 @@ export class Store<
   }
 
   /**
+   * Directly update the state of the store.
+   *
+   * @param state the new state of the store
+   */
+  updateState(state: Immutable<StoreState>): void;
+  /**
    * Directly update the state of the store. The new state is provided by a
    * function that takes the current state and derives the new state.
    *
    * @param callback a function that takes the current state of the store and returns the new state
    */
   updateState(callback: (state: Immutable<StoreState>) => Immutable<StoreState>): void;
-  /**
-   * Directly update the state of the store.
-   *
-   * @param state the new state of the store
-   */
-  updateState(state: Immutable<StoreState>): void;
   updateState(input: Immutable<StoreState> | ((state: Immutable<StoreState>) => Immutable<StoreState>)): void {
     const newState = this.isInputFunction(input) ? input(this.state) : input;
     this.updateStoreState(newState, 'DIRECT_STORE_UPDATE', newState);
   }
 
-  /** Directly update a property in the store state using the current store state */
-  updateProperty<T extends keyof StoreState>(key: T, callback: (state: Immutable<StoreState>) => StoreState[T]): void;
   /** Directly update a property in the store state */
   updateProperty<T extends keyof StoreState>(key: T, value: StoreState[T]): void;
+  /** Directly update a property in the store state using the current store state */
+  updateProperty<T extends keyof StoreState>(key: T, callback: (state: Immutable<StoreState>) => StoreState[T]): void;
   updateProperty<T extends keyof StoreState>(
     key: T,
     input: StoreState[T] | ((state: Immutable<StoreState>) => StoreState[T])
