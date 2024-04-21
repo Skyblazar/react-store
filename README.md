@@ -1,5 +1,7 @@
 # react-store
 
+**NOTE: Do not use in production for now (Check back in one week)**
+
 Global state management for react
 
 ## Installation
