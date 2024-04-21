@@ -34,11 +34,43 @@ export type StoreActions<StoreState> = Record<
 /**
  * Options from store.
  *
- * Custom properties can be added as store options
+ * Custom properties and functions can be added as store options
  * */
-export interface StoreOptions extends Record<string, AllowedAny> {
-  /** Enable/Disable debugging with redux devtools extension. Defaults to `false` */
-  debugStore: boolean;
+export interface StoreOptions<StoreState> extends Record<string, AllowedAny> {
+  /**
+   * Enable/Disable debugging with redux devtools extension
+   *
+   * @default false
+   */
+  debugStore?: boolean;
+  /**
+   * Convert and persist store state on update. Persistence is implemented by {@link StoreOptions.serializer}
+   *
+   * @default false
+   */
+  serializeOnUpdate?: boolean;
+  /**
+   * Function to persist store state.
+   *
+   * @fallback ```localStorage.setItem('storeName', JSON.stringify(storeState))```
+   */
+  serializer?: (storeName: string, storeState: Immutable<StoreState>) => void;
+  /**
+   * Async function to persist store state.
+   */
+  serializerAsync?: (storeName: string, storeState: Immutable<StoreState>) => Promise<void>;
+  /**
+   * Function to initialize store state with persisted data.
+   *
+   * @fallback ```JSON.parse(localStorage?.getItem(storeName))```
+   */
+  unserializer?: (storeName: string) => StoreState;
+  /**
+   * Async function to initialize store state with persisted data.
+   */
+  unserializerAsync?: (storeName: string) => Promise<StoreState>;
 }
 
-export const DEFAULT_STORE_OPTIONS: StoreOptions = { debugStore: false };
+export const DEFAULT_STORE_OPTIONS: Readonly<StoreOptions<AllowedAny>> = {
+  debugStore: false,
+};

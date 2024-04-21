@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { FALLBACK_CONNECTION, reduxDevtools } from './reduxDevtools';
-import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions } from './store.types';
+import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions, StoreOptions } from './store.types';
 
 /** Contains a copy of all the created stores */
 export class CentralStore {
@@ -50,7 +50,7 @@ export class Store<
     private readonly storeName: string,
     private storeState: StoreState,
     private readonly storeActions: Actions,
-    private readonly storeOptions = DEFAULT_STORE_OPTIONS
+    private readonly storeOptions: StoreOptions<StoreState> = DEFAULT_STORE_OPTIONS
   ) {
     super();
 
@@ -209,7 +209,101 @@ export class Store<
   }
 
   /** Reset store back to initial state */
-  reset() {
+  reset(): void {
     this.storeState = this.initialState;
   }
+
+  /**
+   * Persist store state.
+   *
+   * The serializer provided in {@link StoreOptions.serializer} will be used
+   * to persist the current store state.
+   *
+   * ```localStorage?.setItem('storeName', JSON.stringify(storeState))``` will be used
+   * as a fallback if {@link StoreOptions.serializer} is `undefined`
+   *
+   * @throws `Error` if {@link StoreOptions.serializer} and `localStorage?.setItem` are both `undefined`
+   */
+  serialize(): void {
+    if (this.storeOptions.serializer) {
+      return this.storeOptions.serializer(this.storeName, this.state);
+    }
+
+    if (localStorage?.setItem) {
+      return localStorage.setItem(this.storeName, JSON.stringify(this.state));
+    }
+
+    throw new Error(
+      'Cannot serialize store state because "StoreOptions.serializer" and "localStorage.setItem" are both undefined'
+    );
+  }
+
+  /**
+   * Asynchronously persist store state.
+   *
+   * The serializer provided in {@link StoreOptions.serializerAsync} will be used
+   * to persist the current store state.
+   *
+   * @throws `Error` if {@link StoreOptions.serializerAsync} is `undefined`
+   */
+  serializeAsync(): Promise<void> {
+    if (this.storeOptions.serializerAsync) {
+      return this.storeOptions.serializerAsync(this.storeName, this.state);
+    }
+
+    throw new Error('Cannot serialize store state because "StoreOptions.serializerAsync" is undefined');
+  }
+
+  /**
+   * Initialize store state with persisted data.
+   *
+   * The serializer provided in {@link StoreOptions.unserializer} will be used
+   * to persist the current store state.
+   *
+   * ```localStorage?.getItem('storeName')``` will be used
+   * as a fallback if {@link StoreOptions.unserializer} is `undefined`
+   *
+   * @throws `Error` if {@link StoreOptions.unserializer} and `localStorage?.getItem` are both `undefined`
+   */
+  unserialize(): void {
+    if (this.storeOptions.unserializer) {
+      return this.updateState(
+        this.validateStoreState(this.storeOptions.unserializer(this.storeName) as Immutable<StoreState>)
+      );
+    }
+
+    if (localStorage?.getItem) {
+      return this.updateState(this.validateStoreState(JSON.parse(localStorage.getItem(this.storeName)!)));
+    }
+
+    throw new Error(
+      'Cannot unserialize store state because "StoreOptions.unserializer" and "localStorage.getItem" are both undefined'
+    );
+  }
+
+  /**
+   * Initialize store state with persisted data.
+   *
+   * The serializer provided in {@link StoreOptions.unserializerAsync} will be used
+   * to persist the current store state.
+   *
+   * @throws `Error` if {@link StoreOptions.unserializerAsync} is `undefined`
+   */
+  async unserializeAsync(): Promise<void> {
+    if (this.storeOptions.unserializerAsync) {
+      return this.updateState(
+        this.validateStoreState((await this.storeOptions.unserializerAsync(this.storeName)) as Immutable<StoreState>)
+      );
+    }
+
+    throw new Error('Cannot unserialize store state because "StoreOptions.unserializerAsync" is undefined');
+  }
+
+  private validateStoreState = (state: Immutable<StoreState>): Immutable<StoreState> => {
+    if (!state) {
+      throw new Error(`${state} cannot be used to initialize store`);
+    }
+
+    return state;
+  };
 }
