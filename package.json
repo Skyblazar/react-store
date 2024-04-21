@@ -1,6 +1,6 @@
 {
   "name": "@skyblazar/react-store",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Global state management for react",
   "main": "index.ts",
   "scripts": {
