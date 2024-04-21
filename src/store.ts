@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { FALLBACK_CONNECTION, reduxDevtools } from './reduxDevtools';
 import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions, StoreOptions } from './store.types';
+import { cloneDeep } from 'lodash';
 
 /** Contains a copy of all the created stores */
 export class CentralStore {
@@ -212,7 +213,11 @@ export class Store<
     });
     this.reduxDevtoolsConnection.send({ type: String(actionKey), payload }, newState);
     if (this.storeOptions.serializeOnUpdate) {
-      (this.storeOptions.serializerAsync ? this.serializeAsync : this.serialize)();
+      if (this.storeOptions.serializerAsync) {
+        this.serializeAsync();
+      } else {
+        this.serialize();
+      }
     }
   }
 
@@ -287,6 +292,14 @@ export class Store<
     throw new Error(
       'Cannot unserialize store state because "StoreOptions.unserializer" and "localStorage.getItem" are both undefined'
     );
+  }
+
+  clone(cloneStoreName: string) {
+    return new Store(cloneStoreName, cloneDeep(this.storeState), this.storeActions, this.storeOptions);
+  }
+
+  cloneWithOptions(cloneStoreName: string, options: StoreOptions<StoreState>) {
+    return new Store(cloneStoreName, cloneDeep(this.storeState), this.storeActions, options);
   }
 
   /**

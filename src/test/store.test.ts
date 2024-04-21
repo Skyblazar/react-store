@@ -12,6 +12,8 @@ describe('BaseStore', () => {
 
   let store: Store<{ count: number; name: string }>;
 
+  const cloneStoreNamePrefix = 'cloneStore';
+
   beforeEach(() => {
     store = new Store(
       `store-${randomUUID()}`,
@@ -35,15 +37,65 @@ describe('BaseStore', () => {
     expect(CentralStore.getAllStores()).toEqual([store1, store2, store3, store]);
   });
 
-  it('serializes/unserializes store', async () => {
-    await store.serializeAsync();
+  describe('MainStore', () => {
+    describe('.serialize*() and unserialize*()', () => {
+      it('serializes/unserializes store', async () => {
+        await store.serializeAsync();
 
-    store.updateState({ count: 100000, name: 'Temporary Name' });
-    expect(store.state).toEqual({ count: 100000, name: 'Temporary Name' });
+        store.updateState({ count: 100000, name: 'Temporary Name' });
+        expect(store.state).toEqual({ count: 100000, name: 'Temporary Name' });
 
-    await store.unserializeAsync();
-    expect(store.state).toEqual({ count: 0, name: 'counting' });
+        await store.unserializeAsync();
+        expect(store.state).toEqual({ count: 0, name: 'counting' });
 
-    await rm(storeFile(store.name));
+        await rm(storeFile(store.name));
+      });
+    });
+
+    describe('.clone()', () => {
+      const cloneStoreNamePrefix = 'cloneStore';
+      it('clones store', () => {
+        const cloneStoreName = `${cloneStoreNamePrefix}-${randomUUID()}`;
+        const cloneStore = store.clone(cloneStoreName);
+
+        expect(cloneStore.name).toEqual(cloneStoreName);
+        expect(cloneStore.state).toEqual(store.state);
+        expect(cloneStore.actions).toEqual(store.actions);
+      });
+
+      it('does not link cloned store', () => {
+        const cloneStoreName = `${cloneStoreNamePrefix}-${randomUUID()}`;
+        const cloneStore = store.clone(cloneStoreName);
+
+        expect(store.state.count).toEqual(0);
+        expect(cloneStore.state.count).toEqual(0);
+
+        store.updateProperty('count', -1);
+        expect(store.state.count).toEqual(-1);
+        expect(cloneStore.state.count).toEqual(0);
+
+        cloneStore.updateProperty('count', -100);
+        expect(cloneStore.state.count).toEqual(-100);
+        expect(store.state.count).toEqual(-1);
+      });
+    });
+
+    describe('.cloneWithOptions()', () => {
+      it('clones store with provided options', () => {
+        const cloneStoreName = `${cloneStoreNamePrefix}-${randomUUID()}`;
+        const serializer = jest.fn();
+        const cloneStore = store.cloneWithOptions(cloneStoreName, { serializeOnUpdate: true, serializer });
+        const storeSerializeSpy = jest.spyOn(store, 'serialize');
+        const cloneStoreSerializeSpy = jest.spyOn(cloneStore, 'serialize');
+
+        store.updateProperty('count', -1);
+        // serializeOnUpdate not set to true, serialization will not be done on update
+        expect(storeSerializeSpy).not.toHaveBeenCalled();
+
+        cloneStore.updateProperty('count', -1);
+        expect(cloneStoreSerializeSpy).toHaveBeenCalled();
+        expect(serializer).toHaveBeenCalledWith(cloneStoreName, cloneStore.state);
+      });
+    });
   });
 });
