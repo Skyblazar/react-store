@@ -1,6 +1,7 @@
 import path from 'path';
 import { CentralStore, Store } from '../store';
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, rm } from 'fs/promises';
+import { randomUUID } from 'crypto';
 
 describe('BaseStore', () => {
   const store1 = new Store('store1', { count: 0 }, {});
@@ -13,7 +14,7 @@ describe('BaseStore', () => {
 
   beforeEach(() => {
     store = new Store(
-      'store',
+      `store-${randomUUID()}`,
       { count: 0, name: 'counting' },
       {},
       {
@@ -42,5 +43,7 @@ describe('BaseStore', () => {
 
     await store.unserializeAsync();
     expect(store.state).toEqual({ count: 0, name: 'counting' });
+
+    await rm(storeFile(store.name));
   });
 });

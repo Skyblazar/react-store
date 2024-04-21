@@ -4,12 +4,15 @@ import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions, StoreOptions } from './
 
 /** Contains a copy of all the created stores */
 export class CentralStore {
-  /** A list of all the created stores */
-  private static readonly stores: Store<any, any>[] = [];
+  /** A collection of all the created stores */
+  private static readonly stores: Map<string, Store<any, any>> = new Map();
 
-  constructor() {
-    const newStore = this as unknown as Store<any, any>;
-    CentralStore.stores.push(newStore);
+  protected static addStore(newStore: Store<any, any>) {
+    if (this.stores.has(newStore.name)) {
+      throw new Error(`Store names must be unique. Found duplicate store name: "${newStore.name}"`);
+    }
+
+    CentralStore.stores.set(newStore.name, newStore);
   }
 
   /**
@@ -20,7 +23,7 @@ export class CentralStore {
    * @returns a Store instance if a store with the given name exists. If no such store exists, it returns `undefined`.
    */
   static getStore(storeName: string): Store<any, any> | undefined {
-    return this.stores.find(store => store.name === storeName);
+    return this.stores.get(storeName);
   }
 
   /**
@@ -29,7 +32,7 @@ export class CentralStore {
    * Each instance in the array represents a store that has been created.
    */
   static getAllStores(): Store<any, any>[] {
-    return this.stores;
+    return Array.from(this.stores.values());
   }
 }
 
@@ -66,6 +69,8 @@ export class Store<
     this.reduxDevtoolsConnection.init(this.storeState);
 
     this.updateState.bind(this);
+
+    CentralStore.addStore(this);
   }
 
   /**
