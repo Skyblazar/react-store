@@ -211,6 +211,9 @@ export class Store<
       callback(newState, prevState);
     });
     this.reduxDevtoolsConnection.send({ type: String(actionKey), payload }, newState);
+    if (this.storeOptions.serializeOnUpdate) {
+      (this.storeOptions.serializerAsync ? this.serializeAsync : this.serialize)();
+    }
   }
 
   /** Reset store back to initial state */
