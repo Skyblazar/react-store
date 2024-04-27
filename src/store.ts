@@ -1,7 +1,7 @@
-import { randomUUID } from 'crypto';
 import { FALLBACK_CONNECTION, reduxDevtools } from './reduxDevtools';
 import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions, StoreOptions } from './store.types';
 import { cloneDeep } from 'lodash';
+import { randomUUID } from './utils';
 
 /** Contains a copy of all the created stores */
 export class CentralStore {

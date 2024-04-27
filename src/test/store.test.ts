@@ -1,7 +1,7 @@
 import path from 'path';
 import { CentralStore, Store } from '../store';
 import { readFile, writeFile, rm } from 'fs/promises';
-import { randomUUID } from 'crypto';
+import { randomUUID } from '../utils';
 
 describe('BaseStore', () => {
   const store1 = new Store('store1', { count: 0 }, {});
