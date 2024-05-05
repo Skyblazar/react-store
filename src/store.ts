@@ -8,9 +8,17 @@ export class CentralStore {
   /** A collection of all the created stores */
   private static readonly stores: Map<string, Store<any, any>> = new Map();
 
-  protected static addStore(newStore: Store<any, any>) {
+  static readonly globalStoreOptions = {
+    failSilently: true,
+  };
+
+  protected static addStore(newStore: Store<any, any>): void {
     if (this.stores.has(newStore.name)) {
-      throw new Error(`Store names must be unique. Found duplicate store name: "${newStore.name}"`);
+      return handleStoreError(
+        `Store names must be unique. Found duplicate store name: "${newStore.name}"
+        Possible Cause(s):
+        1. The file that contains store: "${newStore.name}" was hot reloaded (if that's the case, then fear not 👍)`
+      );
     }
 
     CentralStore.stores.set(newStore.name, newStore);
@@ -246,7 +254,7 @@ export class Store<
       return localStorage.setItem(this.storeName, JSON.stringify(this.state));
     }
 
-    throw new Error(
+    handleStoreError(
       'Cannot serialize store state because "StoreOptions.serializer" and "localStorage.setItem" are both undefined'
     );
   }
@@ -259,12 +267,12 @@ export class Store<
    *
    * @throws `Error` if {@link StoreOptions.serializerAsync} is `undefined`
    */
-  serializeAsync(): Promise<void> {
+  async serializeAsync(): Promise<void> {
     if (this.storeOptions.serializerAsync) {
       return this.storeOptions.serializerAsync(this.storeName, this.state);
     }
 
-    throw new Error('Cannot serialize store state because "StoreOptions.serializerAsync" is undefined');
+    handleStoreError('Cannot serialize store state because "StoreOptions.serializerAsync" is undefined');
   }
 
   /**
@@ -289,7 +297,7 @@ export class Store<
       return this.updateState(this.validateStoreState(JSON.parse(localStorage.getItem(this.storeName)!)));
     }
 
-    throw new Error(
+    handleStoreError(
       'Cannot unserialize store state because "StoreOptions.unserializer" and "localStorage.getItem" are both undefined'
     );
   }
@@ -317,14 +325,23 @@ export class Store<
       );
     }
 
-    throw new Error('Cannot unserialize store state because "StoreOptions.unserializerAsync" is undefined');
+    handleStoreError('Cannot unserialize store state because "StoreOptions.unserializerAsync" is undefined');
   }
 
   private validateStoreState = (state: Immutable<StoreState>): Immutable<StoreState> => {
     if (!state) {
-      throw new Error(`${state} cannot be used to initialize store`);
+      handleStoreError(`${state} cannot be used to initialize store: ${this.storeName}`);
     }
 
     return state;
   };
 }
+
+const handleStoreError = (message: string, handler: () => void = () => {}): void => {
+  if (CentralStore.globalStoreOptions.failSilently) {
+    console.warn(message);
+    handler();
+  } else {
+    throw new Error(message);
+  }
+};
