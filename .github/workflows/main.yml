@@ -52,8 +52,11 @@ jobs:
       - name: Check version change
         id: check
         run: |
+          echo "Before SHA: ${{ github.event.before }}"
           git fetch origin ${{ github.event.before }} --depth=1
-          VERSION_CHANGED=$(git diff --unified=0 ${{ github.event.before }} HEAD -- package.json | grep '"version":')
+          DIFF=$(git diff --unified=0 ${{ github.event.before }} HEAD -- package.json)
+          VERSION_CHANGED=$(echo "$DIFF" | grep '"version":' || true)
+          echo "Version changed: $VERSION_CHANGED"
           if [[ "$VERSION_CHANGED" != "" ]]; then echo "::set-output name=version_changed::true"; fi
 
       - name: Create Release
