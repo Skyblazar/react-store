@@ -331,6 +331,8 @@ export class Store<
   private validateStoreState = (state: Immutable<StoreState>): Immutable<StoreState> => {
     if (!state) {
       handleStoreError(`${state} cannot be used to initialize store: ${this.storeName}`);
+
+      return this.state;
     }
 
     return state;
