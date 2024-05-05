@@ -45,14 +45,18 @@ jobs:
           check-version: true
           token: ${{ secrets.NPM_TOKEN }}
 
+      - name: Get version
+        id: pkg
+        run: echo "::set-output name=version::$(node -p "require('./package.json').version")"
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.publish.outputs.version }}
-          release_name: Release v${{ steps.publish.outputs.version }}
-          body: Release of version ${{ steps.publish.outputs.version }}
+          tag_name: v${{ steps.pkg.outputs.version }}
+          release_name: Release v${{ steps.pkg.outputs.version }}
+          body: Release of version ${{ steps.pkg.outputs.version }}
           draft: false
           prerelease: false
