@@ -66,7 +66,7 @@ export class Store<
   ) {
     super();
 
-    this.initialState = storeState;
+    this.initialState = cloneDeep(storeState);
 
     this.reduxDevtoolsConnection =
       this.storeOptions.debugStore && !!window?.__REDUX_DEVTOOLS_EXTENSION__

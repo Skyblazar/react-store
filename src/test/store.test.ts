@@ -97,5 +97,15 @@ describe('BaseStore', () => {
         expect(serializer).toHaveBeenCalledWith(cloneStoreName, cloneStore.state);
       });
     });
+
+    describe('.reset()', () => {
+      it('resets store state', () => {
+        store.updateProperty('count', 100);
+        expect(store.state.count).toEqual(100);
+
+        store.reset();
+        expect(store.state.count).toEqual(0);
+      });
+    });
   });
 });
