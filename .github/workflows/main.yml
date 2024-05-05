@@ -39,9 +39,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
       - name: Publish
         uses: JS-DevTools/npm-publish@v1
         with:
