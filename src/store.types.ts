@@ -44,11 +44,17 @@ export interface StoreOptions<StoreState> extends Record<string, AllowedAny> {
    */
   debugStore?: boolean;
   /**
-   * Convert and persist store state on update. Persistence is implemented by {@link StoreOptions.serializer}
+   * Convert and persist store state on update. Persistence is implemented by {@link StoreOptions.serializer} or {@link StoreOptions.serializerAsync}
    *
    * @default false
    */
   serializeOnUpdate?: boolean;
+  /**
+   * Initialize store with persisted data. Data is unserialized by {@link StoreOptions.unserializer} or {@link StoreOptions.unserializerAsync}
+   *
+   * @default false
+   */
+  unserializeOnCreate?: boolean;
   /**
    * Function to persist store state.
    *

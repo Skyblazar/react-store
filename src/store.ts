@@ -77,6 +77,14 @@ export class Store<
         : FALLBACK_CONNECTION;
     this.reduxDevtoolsConnection.init(this.storeState);
 
+    if (storeOptions.unserializeOnCreate) {
+      if (storeOptions.unserializerAsync) {
+        this.unserializeAsync();
+      } else {
+        this.unserialize();
+      }
+    }
+
     this.updateState.bind(this);
 
     CentralStore.addStore(this);
