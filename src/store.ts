@@ -58,6 +58,14 @@ export class Store<
     (newState: Immutable<StoreState>, prevState: Immutable<StoreState>) => void
   >();
 
+  /**
+   * Creates a new {@link Store} instance.
+   *
+   * @param storeName - The name of the store.
+   * @param storeState - The initial state of the store.
+   * @param storeActions - The actions available for the store.
+   * @param storeOptions - The options for configuring the store (optional).
+   */
   constructor(
     private readonly storeName: string,
     private storeState: StoreState,
@@ -310,12 +318,32 @@ export class Store<
     );
   }
 
+  /**
+   * Creates a clone of the current store instance.
+   *
+   * @param cloneStoreName - The name of the cloned store.
+   *
+   * @returns A new {@link Store} instance with the cloned state, actions, and options.
+   */
   clone(cloneStoreName: string) {
-    return new Store(cloneStoreName, cloneDeep(this.storeState), this.storeActions, this.storeOptions);
+    return new Store(
+      cloneStoreName,
+      cloneDeep(this.storeState),
+      cloneDeep(this.storeActions),
+      cloneDeep(this.storeOptions)
+    );
   }
 
+  /**
+   * Creates a clone of the store with the specified name and options.
+   *
+   * @param cloneStoreName - The name of the cloned store.
+   * @param options - The options for the cloned store.
+   *
+   * @returns A new {@link Store} instance with the cloned state, actions, and options.
+   */
   cloneWithOptions(cloneStoreName: string, options: StoreOptions<StoreState>) {
-    return new Store(cloneStoreName, cloneDeep(this.storeState), this.storeActions, options);
+    return new Store(cloneStoreName, cloneDeep(this.storeState), cloneDeep(this.storeActions), options);
   }
 
   /**
