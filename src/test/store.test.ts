@@ -2,6 +2,7 @@ import path from 'path';
 import { CentralStore, Store } from '../store';
 import { readFile, writeFile, rm } from 'fs/promises';
 import { randomUUID } from '../utils';
+import { StoreOptions } from '../store.types';
 
 describe('BaseStore', () => {
   const store1 = new Store('store1', { count: 0 }, {});
@@ -13,20 +14,16 @@ describe('BaseStore', () => {
   let store: Store<{ count: number; name: string }>;
 
   const cloneStoreNamePrefix = 'cloneStore';
+  const storeOptions: StoreOptions<{ count: number; name: string }> = {
+    serializerAsync: (storeName, storeState) => writeFile(storeFile(storeName), JSON.stringify(storeState)),
+    unserializerAsync: async storeName => {
+      const data = await readFile(storeFile(storeName), 'utf-8');
+      return JSON.parse(data);
+    },
+  };
 
   beforeEach(() => {
-    store = new Store(
-      `store-${randomUUID()}`,
-      { count: 0, name: 'counting' },
-      {},
-      {
-        serializerAsync: (storeName, storeState) => writeFile(storeFile(storeName), JSON.stringify(storeState)),
-        unserializerAsync: async storeName => {
-          const data = await readFile(storeFile(storeName), 'utf-8');
-          return JSON.parse(data);
-        },
-      }
-    );
+    store = new Store(`store-${randomUUID()}`, { count: 0, name: 'counting' }, {}, storeOptions);
   });
 
   it('keeps track of all new store instances', () => {
@@ -63,7 +60,7 @@ describe('BaseStore', () => {
         expect(cloneStore.actions).toEqual(store.actions);
       });
 
-      it('does not link cloned store', () => {
+      it('does not link cloned store state', () => {
         const cloneStoreName = `${cloneStoreNamePrefix}-${randomUUID()}`;
         const cloneStore = store.clone(cloneStoreName);
 
