@@ -1,10 +1,15 @@
 {
   "name": "@skyblazar/react-store",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "description": "Global state management for react",
   "main": "index.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": " rm -rf dist && ncc build ./index.ts -m -o dist --external lodash --external react --external uuid",
+    "publish": "npm run build && npm publish --access=public"
   },
   "repository": {
     "type": "git",
@@ -34,6 +39,7 @@
     "@types/node": "^20.12.3",
     "@types/react": "^18.2.74",
     "@types/uuid": "^9.0.8",
+    "@vercel/ncc": "^0.38.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.2.5",
