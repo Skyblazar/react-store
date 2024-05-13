@@ -4,7 +4,7 @@ import { readFile, writeFile, rm } from 'fs/promises';
 import { randomUUID } from '../utils';
 import { StoreOptions } from '../store.types';
 
-describe('BaseStore', () => {
+describe('Store', () => {
   const store1 = new Store('store1', { count: 0 }, {});
   const store2 = new Store('store2', { count: 100 }, {});
   const store3 = new Store('store3', { count: 1000 }, {});
@@ -26,12 +26,21 @@ describe('BaseStore', () => {
     store = new Store(`store-${randomUUID()}`, { count: 0, name: 'counting' }, {}, storeOptions);
   });
 
-  it('keeps track of all new store instances', () => {
-    expect(CentralStore.getStore('store1')).toBe(store1);
-    expect(CentralStore.getStore('store2')).toBe(store2);
-    expect(CentralStore.getStore('store3')).toBe(store3);
+  describe('CentralStore', () => {
+    it('keeps track of all new store instances', () => {
+      expect(CentralStore.getStore('store1')).toBe(store1);
+      expect(CentralStore.getStore('store2')).toBe(store2);
+      expect(CentralStore.getStore('store3')).toBe(store3);
 
-    expect(CentralStore.getAllStores()).toEqual([store1, store2, store3, store]);
+      expect(CentralStore.getAllStores()).toEqual([store1, store2, store3, store]);
+    });
+
+    it('sets global store options', () => {
+      expect(CentralStore.globalStoreOptions.failSilently).toBe(true);
+
+      CentralStore.globalStoreOptions.failSilently = false;
+      expect(CentralStore.globalStoreOptions.failSilently).toBe(false);
+    });
   });
 
   describe('MainStore', () => {
@@ -44,6 +53,14 @@ describe('BaseStore', () => {
 
         await store.unserializeAsync();
         expect(store.state).toEqual({ count: 0, name: 'counting' });
+
+        await rm(storeFile(store.name));
+      });
+
+      it.skip('serializes on update', async () => {
+        const storeSerializeSpy = jest.spyOn(store, 'serialize');
+        store.updateProperty('count', 1000);
+        expect(storeSerializeSpy).toHaveBeenCalled();
 
         await rm(storeFile(store.name));
       });

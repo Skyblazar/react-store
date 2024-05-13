@@ -8,8 +8,7 @@
   ],
   "scripts": {
     "test": "jest",
-    "build": " rm -rf dist && bunchee ./index.ts -o dist/index.js --external lodash --external react --external uuid",
-    "publish": "npm run build && npm publish --access=public"
+    "build": " rm -rf dist && bunchee ./index.ts -m -o dist/index.js --external lodash --external react --external uuid"
   },
   "repository": {
     "type": "git",
