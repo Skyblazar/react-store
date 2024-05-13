@@ -8,7 +8,13 @@ export class CentralStore {
   /** A collection of all the created stores */
   private static readonly stores: Map<string, Store<any, any>> = new Map();
 
+  /** A collection of options to be applied to all stores */
   static readonly globalStoreOptions = {
+    /**
+     * `true` if a warning should be logged for errors in any store. `false` if store errors should be thrown
+     *
+     * @default true
+     */
     failSilently: true,
   };
 
@@ -25,18 +31,18 @@ export class CentralStore {
   }
 
   /**
-   * Retrieve a specific Store instance by its name.
+   * Retrieve a specific {@link Store} instance by its name.
    *
-   * @param storeName represents the name of the store instance to be retrieved.
+   * @param storeName represents the name of the {@link Store} instance to be retrieved.
    *
-   * @returns a Store instance if a store with the given name exists. If no such store exists, it returns `undefined`.
+   * @returns a {@link Store} instance if a store with the given name exists. If no such store exists, it returns `undefined`.
    */
   static getStore(storeName: string): Store<any, any> | undefined {
     return this.stores.get(storeName);
   }
 
   /**
-   * Returns an array of all Store instances.
+   * Returns an array of all {@link Store} instances.
    *
    * Each instance in the array represents a store that has been created.
    */
@@ -193,9 +199,19 @@ export class Store<
     this.updateStoreState(newState, 'DIRECT_STORE_UPDATE', newState);
   }
 
-  /** Directly update a property in the store state */
+  /**
+   * Directly update a property in the store state
+   *
+   * @param key the key of the property to be updated
+   * @param value the new value of the property
+   */
   updateProperty<T extends keyof StoreState>(key: T, value: StoreState[T]): void;
-  /** Directly update a property in the store state using the current store state */
+  /**
+   * Directly update a property in the store state using the current store state
+   *
+   * @param key the key of the property to be updated
+   * @param callback a function that takes the current state of the store and returns the new value of the property to be updated
+   */
   updateProperty<T extends keyof StoreState>(key: T, callback: (state: Immutable<StoreState>) => StoreState[T]): void;
   updateProperty<T extends keyof StoreState>(
     key: T,
@@ -281,7 +297,7 @@ export class Store<
    * The serializer provided in {@link StoreOptions.serializerAsync} will be used
    * to persist the current store state.
    *
-   * @throws `Error` if {@link StoreOptions.serializerAsync} is `undefined`
+   * @throws `Error` if {@link StoreOptions.serializerAsync} is `undefined` and {@link CentralStore.globalStoreOptions.failSilently} is `false`
    */
   async serializeAsync(): Promise<void> {
     if (this.storeOptions.serializerAsync) {
@@ -300,7 +316,7 @@ export class Store<
    * ```localStorage?.getItem('storeName')``` will be used
    * as a fallback if {@link StoreOptions.unserializer} is `undefined`
    *
-   * @throws `Error` if {@link StoreOptions.unserializer} and `localStorage?.getItem` are both `undefined`
+   * @throws `Error` if {@link StoreOptions.unserializer} and `localStorage?.getItem` are both `undefined` and {@link CentralStore.globalStoreOptions.failSilently} is `false`
    */
   unserialize(): void {
     if (this.storeOptions.unserializer) {
@@ -319,7 +335,7 @@ export class Store<
   }
 
   /**
-   * Creates a clone of the current store instance.
+   * Creates a clone of the current {@link Store} instance.
    *
    * @param cloneStoreName - The name of the cloned store.
    *
@@ -352,7 +368,7 @@ export class Store<
    * The serializer provided in {@link StoreOptions.unserializerAsync} will be used
    * to persist the current store state.
    *
-   * @throws `Error` if {@link StoreOptions.unserializerAsync} is `undefined`
+   * @throws `Error` if {@link StoreOptions.unserializerAsync} is `undefined` and {@link CentralStore.globalStoreOptions.failSilently} is `false`
    */
   async unserializeAsync(): Promise<void> {
     if (this.storeOptions.unserializerAsync) {
