@@ -1,6 +1,6 @@
 import { FALLBACK_CONNECTION, reduxDevtools } from './reduxDevtools';
 import { DEFAULT_STORE_OPTIONS, Immutable, StoreActions, StoreOptions } from './store.types';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, snakeCase } from 'lodash';
 import { randomUUID } from './utils';
 
 /** Contains a copy of all the created stores */
@@ -196,7 +196,7 @@ export class Store<
   updateState(callback: (state: Immutable<StoreState>) => Immutable<StoreState>): void;
   updateState(input: Immutable<StoreState> | ((state: Immutable<StoreState>) => Immutable<StoreState>)): void {
     const newState = this.isInputFunction(input) ? input(this.state) : input;
-    this.updateStoreState(newState, 'DIRECT_STORE_UPDATE', newState);
+    this.updateStoreState(newState, `${snakeCase(this.storeName).toLocaleUpperCase()}: DIRECT_STORE_UPDATE`, newState);
   }
 
   /**
@@ -222,7 +222,12 @@ export class Store<
     input: StoreState[T] | ((state: Immutable<StoreState>) => StoreState[T])
   ): void {
     const newValue = this.isPropertyInputFunction(input) ? input(this.state) : input;
-    this.updateStoreProperty(key, newValue, 'DIRECT_STORE_PROPERTY_UPDATE', { [key]: newValue });
+    this.updateStoreProperty(
+      key,
+      newValue,
+      `${snakeCase(this.storeName).toLocaleUpperCase()}: DIRECT_STORE_PROPERTY_UPDATE`,
+      { [key]: newValue }
+    );
   }
 
   private updateStoreState(state: Immutable<StoreState>, actionKey: keyof Actions, payload: unknown): void {
