@@ -7,6 +7,7 @@
     "dist"
   ],
   "scripts": {
+    "lint": "tsc --noEmit",
     "test": "jest",
     "build": " rm -rf dist && bunchee ./index.ts -m -o dist/index.js --external lodash --external react --external uuid"
   },
