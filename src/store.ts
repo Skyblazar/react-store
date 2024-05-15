@@ -57,7 +57,7 @@ export class Store<
 > extends CentralStore {
   private readonly reduxDevtoolsConnection: ReduxDevtoolsConnection;
 
-  private readonly initialState: StoreState;
+  private initialState = {} as StoreState;
 
   private readonly storeListeners = new Map<
     string,
@@ -80,8 +80,6 @@ export class Store<
   ) {
     super();
 
-    this.initialState = cloneDeep(storeState);
-
     this.reduxDevtoolsConnection =
       this.storeOptions.debugStore && !!window?.__REDUX_DEVTOOLS_EXTENSION__
         ? reduxDevtools.connectStore({
@@ -89,15 +87,8 @@ export class Store<
             initialStoreState: this.storeState,
           })
         : FALLBACK_CONNECTION;
-    this.reduxDevtoolsConnection.init(this.storeState);
 
-    if (storeOptions.unserializeOnCreate) {
-      if (storeOptions.unserializerAsync) {
-        this.unserializeAsync();
-      } else {
-        this.unserialize();
-      }
-    }
+    this.initializeStore();
 
     this.updateState.bind(this);
 
@@ -124,6 +115,53 @@ export class Store<
   get actions(): Actions {
     return this.storeActions;
   }
+
+  private initializeStore = async (): Promise<void> => {
+    if (this.storeOptions.unserializeOnCreate) {
+      if (this.storeOptions.unserializerAsync) {
+        await this.unserializeAsync();
+      } else {
+        this.unserialize();
+      }
+    }
+
+    this.initialState = cloneDeep(this.storeState);
+
+    this.reduxDevtoolsConnection.init(this.storeState);
+    this.reduxDevtoolsConnection.subscribe(data => {
+      if (data?.type !== 'DISPATCH' || data.payload?.type === 'PAUSE_RECORDING') {
+        return;
+      }
+
+      switch (data.payload?.type) {
+        case 'RESET':
+          this.reset();
+          this.reduxDevtoolsConnection.init(this.storeState);
+          break;
+
+        case 'COMMIT':
+          this.reduxDevtoolsConnection.init(this.storeState);
+          break;
+
+        case 'ROLLBACK':
+          this.updateStoreState(
+            JSON.parse(data.state ?? '{}'),
+            `${snakeCase(this.storeName).toLocaleUpperCase()}: STORE_REVERT`,
+            undefined
+          );
+          break;
+
+        // case 'JUMP_TO_ACTION':
+        //   // TODO: do not create new action
+        //   this.updateStoreState(
+        //     JSON.parse(data.state ?? '{}'),
+        //     `${snakeCase(this.storeName).toLocaleUpperCase()}: STORE_JUMP_TO_ACTION`,
+        //     undefined
+        //   );
+        //   break;
+      }
+    });
+  };
 
   /**
    * Used to dispatch an action to update the store state. The action is identified by a
@@ -268,7 +306,11 @@ export class Store<
 
   /** Reset store back to initial state */
   reset(): void {
-    this.storeState = this.initialState;
+    this.updateStoreState(
+      cloneDeep(this.initialState) as Immutable<StoreState>,
+      `${snakeCase(this.storeName).toLocaleUpperCase()}: STORE_RESET`,
+      undefined
+    );
   }
 
   /**
