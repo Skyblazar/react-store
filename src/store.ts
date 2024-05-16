@@ -18,13 +18,16 @@ export class CentralStore {
     failSilently: true,
   };
 
-  protected static addStore(newStore: Store<any, any>): void {
-    if (this.stores.has(newStore.name)) {
-      return handleStoreError(
+  protected static addStore(newStore: Store<any, any>): Store<any, any> | undefined {
+    const currentStore = this.stores.get(newStore.name);
+    if (currentStore) {
+      handleStoreError(
         `Store names must be unique. Found duplicate store name: "${newStore.name}"
         Possible Cause(s):
         1. The file that contains store: "${newStore.name}" was hot reloaded (if that's the case, then fear not 👍)`
       );
+
+      return currentStore;
     }
 
     CentralStore.stores.set(newStore.name, newStore);
@@ -55,7 +58,7 @@ export class Store<
   StoreState,
   Actions extends StoreActions<StoreState> = StoreActions<StoreState>,
 > extends CentralStore {
-  private readonly reduxDevtoolsConnection: ReduxDevtoolsConnection;
+  private readonly reduxDevtoolsConnection: ReduxDevtoolsConnection = FALLBACK_CONNECTION;
 
   private initialState = {} as StoreState;
 
@@ -80,6 +83,11 @@ export class Store<
   ) {
     super();
 
+    const existingStore = CentralStore.addStore(this);
+    if (existingStore) {
+      return existingStore;
+    }
+
     this.reduxDevtoolsConnection =
       this.storeOptions.debugStore && !!window?.__REDUX_DEVTOOLS_EXTENSION__
         ? reduxDevtools.connectStore({
@@ -91,8 +99,6 @@ export class Store<
     this.initializeStore();
 
     this.updateState.bind(this);
-
-    CentralStore.addStore(this);
   }
 
   /**
@@ -151,14 +157,9 @@ export class Store<
           );
           break;
 
-        // case 'JUMP_TO_ACTION':
-        //   // TODO: do not create new action
-        //   this.updateStoreState(
-        //     JSON.parse(data.state ?? '{}'),
-        //     `${snakeCase(this.storeName).toLocaleUpperCase()}: STORE_JUMP_TO_ACTION`,
-        //     undefined
-        //   );
-        //   break;
+        case 'JUMP_TO_ACTION':
+          this.updateStoreState(JSON.parse(data.state ?? '{}'), undefined, undefined);
+          break;
       }
     });
   };
@@ -268,7 +269,7 @@ export class Store<
     );
   }
 
-  private updateStoreState(state: Immutable<StoreState>, actionKey: keyof Actions, payload: unknown): void {
+  private updateStoreState(state: Immutable<StoreState>, actionKey: keyof Actions | undefined, payload: unknown): void {
     const prevState = structuredClone(this.state);
     this.storeState = state as StoreState;
     this.onStoreChanged(state, prevState, actionKey, payload);
@@ -288,13 +289,18 @@ export class Store<
   private onStoreChanged(
     newState: Immutable<StoreState>,
     prevState: Immutable<StoreState>,
-    actionKey: keyof Actions,
+    actionKey: keyof Actions | undefined,
     payload: unknown
   ) {
+    // Ensure that that redux captures dispatched action before calling store listeners
+    if (actionKey) {
+      this.reduxDevtoolsConnection.send({ type: String(actionKey), payload }, newState);
+    }
+
     this.storeListeners.forEach(callback => {
       callback(newState, prevState);
     });
-    this.reduxDevtoolsConnection.send({ type: String(actionKey), payload }, newState);
+
     if (this.storeOptions.serializeOnUpdate) {
       if (this.storeOptions.serializerAsync) {
         this.serializeAsync();
@@ -311,6 +317,11 @@ export class Store<
       `${snakeCase(this.storeName).toLocaleUpperCase()}: STORE_RESET`,
       undefined
     );
+  }
+
+  clearSubscriptions(): void {
+    this.storeListeners.clear();
+    this.reduxDevtoolsConnection.unsubscribe();
   }
 
   /**

@@ -40,6 +40,21 @@ describe('Store', () => {
 
       CentralStore.globalStoreOptions.failSilently = false;
       expect(CentralStore.globalStoreOptions.failSilently).toBe(false);
+
+      CentralStore.globalStoreOptions.failSilently = true;
+    });
+
+    it('handle duplicate', () => {
+      const store1 = new Store('storeN', { count: 0 }, {});
+      const store2 = new Store('storeN', { count: -1000 }, {});
+      const store3 = new Store('storeN', { count: 1000, counter: 2000, name: 'test' }, {});
+
+      expect(store1).toBe(store1);
+      expect(store1.state).toEqual({ count: 0 });
+      expect(store2).toEqual(store1);
+      expect(store2.state).toEqual({ count: 0 });
+      expect(store3).toBe(store1);
+      expect(store3.state).toEqual({ count: 0 });
     });
   });
 
