@@ -16,6 +16,7 @@
     "url": "git+https://github.com/Skyblazar/react-store.git"
   },
   "keywords": [
+    "global",
     "state",
     "management",
     "react"
