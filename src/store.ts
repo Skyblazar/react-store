@@ -150,11 +150,9 @@ export class Store<
           break;
 
         case 'ROLLBACK':
-          this.updateStoreState(
-            JSON.parse(data.state ?? '{}'),
-            `${snakeCase(this.storeName).toLocaleUpperCase()}: STORE_REVERT`,
-            undefined
-          );
+          const rollbackState = JSON.parse(data.state ?? '{}');
+          this.updateStoreState(rollbackState, undefined, undefined);
+          this.reduxDevtoolsConnection.init(rollbackState);
           break;
 
         case 'JUMP_TO_ACTION':
@@ -204,8 +202,6 @@ export class Store<
     this.storeListeners.set(id, onStoreChangedCallback);
 
     return () => {
-      this.reduxDevtoolsConnection.unsubscribe();
-
       return this.storeListeners.delete(id);
     };
   }
