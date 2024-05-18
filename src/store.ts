@@ -52,6 +52,18 @@ export class CentralStore {
   static getAllStores(): Store<any, any>[] {
     return Array.from(this.stores.values());
   }
+
+  /**
+   * Returns an object containing all {@link Store} instances.
+   *
+   * Each key in the object represents the name of a store that has been created.
+   */
+  static getAllStoresAsObject(): Record<string, Store<any, any>> {
+    return Array.from(this.stores.values()).reduce<Record<string, Store<any, any>>>((acc, store) => {
+      acc[store.name] = store;
+      return acc;
+    }, {});
+  }
 }
 
 export class Store<
